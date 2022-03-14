@@ -3,6 +3,7 @@
 
 OPTIND=1 # Reset in case getopts has been used previously in the shell.
 POSIXLY_CORRECT=yes
+
 declare -r DEFAULT_WIDTH=100
 
 function main() {
@@ -11,9 +12,13 @@ function main() {
     # sets cmd variable to command name or 0 if no command
     set_command $@
     #prints file names
+    num_files=0
     get_files $@
+    if [ $num_files = 0 ]; then
+        file=$(cat)
+    fi
 
-    echo "program finished without error"
+    echo "file var $file"
 }
 
 function get_flags() {
@@ -121,8 +126,9 @@ function get_files() {
         if [ -z $param ]; then
             break
         else
-            echo "$param"
+            echo "param var $param"
             OPTIND=$((OPTIND + 1))
+            num_files=$((num_files + 1))
         fi
     done
 }
