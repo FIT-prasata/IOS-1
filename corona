@@ -1,0 +1,105 @@
+#/!/bin/bash
+#!shellscript
+
+OPTIND=1 # Reset in case getopts has been used previously in the shell.
+declare -r DEFAULT_WIDTH=100
+
+function main() {
+    check $@
+
+    echo "program finished without error"
+}
+
+function help() {
+    echo "Help"
+    exit 0
+}
+
+function after() {
+    if [ -z $a ]; then
+        echo "Parameter to flag -a is required"
+        error=1
+        return
+    fi
+    echo "A $a"
+}
+
+function before() {
+    if [ -z $b ]; then
+        echo "Parameter to flag -b is required"
+        error=1
+        return
+    fi
+    echo "B $b"
+}
+
+function gender() {
+    if [ -z $g ]; then
+        echo "Parameter to flag -g is required"
+        error=1
+        return
+    fi
+    echo "$g"
+}
+
+function sgraph() {
+    echo "S $s"
+}
+
+function check() {
+    local opt
+    error=0
+    while getopts ":abgsh" opt; do
+        case $opt in
+        a)
+            eval nextopt=\${$OPTIND}
+            if [[ -n $nextopt && $nextopt != -* ]]; then
+                OPTIND=$((OPTIND + 1))
+                a=$nextopt
+            else
+                a=""
+            fi
+            after
+            ;;
+        b)
+            eval nextopt=\${$OPTIND}
+            if [[ -n $nextopt && $nextopt != -* ]]; then
+                OPTIND=$((OPTIND + 1))
+                b=$nextopt
+            else
+                b=""
+            fi
+            before
+            ;;
+        g)
+            eval nextopt=\${$OPTIND}
+            if [[ -n $nextopt && $nextopt != -* ]]; then
+                OPTIND=$((OPTIND + 1))
+                g=$nextopt
+            else
+                g=""
+            fi
+            gender
+            ;;
+
+        s)
+            eval nextopt=\${$OPTIND}
+            if [[ -n $nextopt && $nextopt != -* ]]; then
+                OPTIND=$((OPTIND + 1))
+                s=$nextopt
+            else
+                s=$DEFAULT_WIDTH
+            fi
+            sgraph
+            ;;
+        h) help ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
+    if [ $error = 1 ]; then
+        exit 1
+    fi
+}
+
+main $@
