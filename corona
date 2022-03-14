@@ -2,6 +2,7 @@
 #!shellscript
 
 OPTIND=1 # Reset in case getopts has been used previously in the shell.
+POSIXLY_CORRECT=yes
 declare -r DEFAULT_WIDTH=100
 
 function main() {
