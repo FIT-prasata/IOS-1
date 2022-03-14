@@ -5,48 +5,17 @@ OPTIND=1 # Reset in case getopts has been used previously in the shell.
 declare -r DEFAULT_WIDTH=100
 
 function main() {
-    check $@
+    # evaluates flags with their's parameters and calls their functions
+    get_flags $@
+    # sets cmd variable to command name or 0 if no command
+    set_command $@
+    #prints file names
+    get_files $@
 
     echo "program finished without error"
 }
 
-function help() {
-    echo "Help"
-    exit 0
-}
-
-function after() {
-    if [ -z $a ]; then
-        echo "Parameter to flag -a is required"
-        error=1
-        return
-    fi
-    echo "A $a"
-}
-
-function before() {
-    if [ -z $b ]; then
-        echo "Parameter to flag -b is required"
-        error=1
-        return
-    fi
-    echo "B $b"
-}
-
-function gender() {
-    if [ -z $g ]; then
-        echo "Parameter to flag -g is required"
-        error=1
-        return
-    fi
-    echo "$g"
-}
-
-function sgraph() {
-    echo "S $s"
-}
-
-function check() {
+function get_flags() {
     local opt
     error=0
     while getopts ":abgsh" opt; do
@@ -95,11 +64,66 @@ function check() {
         h) help ;;
         esac
     done
-    shift $((OPTIND - 1))
-
     if [ $error = 1 ]; then
         exit 1
     fi
+}
+
+function after() {
+    if [ -z $a ]; then
+        echo "Parameter to flag -a is required"
+        error=1
+        return
+    fi
+    echo "A $a"
+}
+
+function before() {
+    if [ -z $b ]; then
+        echo "Parameter to flag -b is required"
+        error=1
+        return
+    fi
+    echo "B $b"
+}
+
+function gender() {
+    if [ -z $g ]; then
+        echo "Parameter to flag -g is required"
+        error=1
+        return
+    fi
+    echo "$g"
+}
+
+function sgraph() {
+    echo "S $s"
+}
+
+function help() {
+    echo "Help"
+    exit 0
+}
+
+function set_command() {
+    eval cmd=\${$OPTIND}
+    case $cmd in
+    infected | merge | gender | age | daily | monthly | yearly | countries | districts | regions) OPTIND=$((OPTIND + 1)) ;;
+    *) cmd=0 ;;
+    esac
+    echo "$cmd"
+}
+
+function get_files() {
+    while true; do
+        eval param=\${$OPTIND}
+        if [ -z $param ]; then
+            break
+        else
+            echo "$param"
+            OPTIND=$((OPTIND + 1))
+        fi
+    done
 }
 
 main $@
