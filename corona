@@ -130,6 +130,8 @@ function process_files() {
             OPTIND=$((OPTIND + 1))
             num_files=$((num_files + 1))
             apply_requirements $param $num_files 1
+
+            apply_commands
         fi
     done
 }
@@ -169,6 +171,10 @@ function apply_requirements {
             }
         }
     ')
+    
+}
+
+function apply_commands {
     case $cmd in 
         infected)
             echo "$filtered_output" ;;
