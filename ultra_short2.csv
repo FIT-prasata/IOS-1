@@ -1,0 +1,4 @@
+id,datum,vek,pohlavi,kraj_nuts_kod,okres_lau_kod,nakaza_v_zahranici,nakaza_zeme_csu_kod,reportovano_khs
+768b7856-1b7f-4fbc-96b8-5bccf57c4ea9,2020-03-06,11,Z,CZ042,CZ0421,,,1
+768b7856-1b7f-4fbc-96b8-5bccf57c4ea9,2020-05-06,11,Z,CZ042,CZ0421,,,1
+768b7856-1b7f-4fbc-96b8-5bccf57c4ea9,2020-07-06,11,Z,CZ042,CZ0421,,,1

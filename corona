@@ -19,7 +19,6 @@ function main() {
         apply_requirements 0 $num_files 0
     fi
 
-
 }
 
 function get_flags() {
@@ -122,6 +121,7 @@ function set_command() {
 }
 
 function process_files() {
+    file=""
     while true; do
         eval param=\${$OPTIND}
         if [ -z $param ]; then
@@ -129,20 +129,23 @@ function process_files() {
         else
             OPTIND=$((OPTIND + 1))
             num_files=$((num_files + 1))
-            apply_requirements $param $num_files 1
-
-            apply_commands
+            if [ $num_files != 1 ]; then
+                param=$(awk '{if (NR!=1) {print}}' $param)
+                file="$file 
+$param"
+            else
+                file="$(cat "$param")"
+            fi
         fi
     done
+    apply_requirements $file
+    apply_commands
 }
 
 function apply_requirements {
-    if [ $3 = 1 ]; then
-        file=`cat $1`
-    fi
-    num_file="$2"
-    if [[ $num_file = 1 && $cmd = "merge" ]] ; then
-        echo "$file" | awk '{if (NR==1) {print}}' 
+
+    if [ $cmd = "merge" ]; then
+        echo "$file" | awk '{if (NR==1) {print}}'
     fi
 
     filtered_output=$(echo "$file" | awk -F "," -v after_date=$a -v before_date=$b -v gender=$g -v size_graph=$s '
@@ -171,36 +174,56 @@ function apply_requirements {
             }
         }
     ')
-    
+
 }
 
 function apply_commands {
-    case $cmd in 
-        infected)
-            echo "$filtered_output" ;;
-        merge)
-            echo "$filtered_output" ;;
-        gender)
-            echo "$filtered_output" ;;
-        age)
-            echo "$filtered_output" ;;
-        daily)
-            echo "$filtered_output" ;;
-        monthly)
-            echo "$filtered_output" ;;
-        yearly)
-            echo "$filtered_output" ;;
-        countries)
-            echo "$filtered_output" ;;
-        districts)
-            echo "$filtered_output" ;;
-        regions)
-            echo "$filtered_output" ;;
-        infected)
-            echo "$filtered_output" ;;
-        0)
-            echo "$filtered_output" ;;
-        esac
+    case $cmd in
+    infected)
+        echo "$filtered_output";
+        break
+        ;;
+    merge)
+        echo "$filtered_output";
+        break
+        ;;
+    gender)
+        echo "$filtered_output";
+        break
+        ;;
+    age)
+        echo "$filtered_output";
+        break
+        ;;
+    daily)
+        echo "$filtered_output";
+        break
+        ;;
+    monthly)
+        echo "$filtered_output";
+        break
+        ;;
+    yearly)
+        echo "$filtered_output";
+        break
+        ;;
+    countries)
+        echo "$filtered_output";
+        break
+        ;;
+    districts)
+        echo "$filtered_output";
+        break
+        ;;
+    regions)
+        echo "$filtered_output";
+        break
+        ;;
+    0)
+        echo "$filtered_output";
+        break
+        ;;
+    esac
 }
 
 main $@
