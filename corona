@@ -138,7 +138,7 @@ $param"
             fi
         fi
     done
-    apply_requirements $file
+    apply_requirements
     apply_commands
 }
 
@@ -154,7 +154,7 @@ function apply_requirements {
             {
                 # apply filters if there are any
                     if (length(after_date) > 0) {
-                        if (after_date >= $2) {
+                        if (after_date > $2) {
                             {next}
                         }
                     }
