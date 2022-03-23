@@ -15,8 +15,10 @@ function main() {
     num_files=0
     process_files $@
     if [ $num_files = 0 ]; then
+
         file="$(cat)"
-        apply_requirements 0 $num_files 0
+        apply_requirements
+        apply_commands
     fi
 
 }
@@ -81,7 +83,10 @@ function after() {
         error=1
         return
     fi
-    echo "TODO validate after format date"
+    if ! [[ $a =~ ^[0-9]{4}-(02-(0[1-9]|[12][0-9])|(0[469]|11)-(0[1-9]|[12][0-9]|30)|(0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))$ ]]; then
+        echo "Invalid date format"
+        exit 1
+    fi
 }
 
 function before() {
@@ -90,7 +95,10 @@ function before() {
         error=1
         return
     fi
-    echo "TODO validate before format date"
+    if ! [[ $b =~ ^[0-9]{4}-(02-(0[1-9]|[12][0-9])|(0[469]|11)-(0[1-9]|[12][0-9]|30)|(0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))$ ]]; then
+        echo "Invalid date format"
+        exit 1
+    fi
 }
 
 function gender() {
@@ -99,7 +107,10 @@ function gender() {
         error=1
         return
     fi
-    echo "TODO validate gender format"
+    if ! [[ $g == "M" || $g == "Z" ]]; then
+        echo "Invalid gender type"
+        error=1
+    fi
 }
 
 function sgraph() {
@@ -117,7 +128,6 @@ function set_command() {
     infected | merge | gender | age | daily | monthly | yearly | countries | districts | regions) OPTIND=$((OPTIND + 1)) ;;
     *) cmd=0 ;;
     esac
-    echo "$cmd"
 }
 
 function process_files() {
@@ -130,9 +140,9 @@ function process_files() {
             OPTIND=$((OPTIND + 1))
             num_files=$((num_files + 1))
             if [ $num_files != 1 ]; then
-                param=$(awk '{if (NR!=1) {print}}' $param)
+                new_file=$(awk '{if (NR!=1) {print}}' $param)
                 file="$file 
-$param"
+$new_file"
             else
                 file="$(cat "$param")"
             fi
@@ -180,50 +190,72 @@ function apply_requirements {
 function apply_commands {
     case $cmd in
     infected)
-        echo "$filtered_output";
+        infected_fun
         break
         ;;
     merge)
-        echo "$filtered_output";
+        echo "$filtered_output"
         break
         ;;
     gender)
-        echo "$filtered_output";
+        gender_fun
         break
         ;;
     age)
-        echo "$filtered_output";
+        echo "$filtered_output"
         break
         ;;
     daily)
-        echo "$filtered_output";
+        echo "$filtered_output"
         break
         ;;
     monthly)
-        echo "$filtered_output";
+        echo "$filtered_output"
         break
         ;;
     yearly)
-        echo "$filtered_output";
+        echo "$filtered_output"
         break
         ;;
     countries)
-        echo "$filtered_output";
+        echo "$filtered_output"
         break
         ;;
     districts)
-        echo "$filtered_output";
+        echo "$filtered_output"
         break
         ;;
     regions)
-        echo "$filtered_output";
+        echo "$filtered_output"
         break
         ;;
     0)
-        echo "$filtered_output";
+        echo "$filtered_output"
         break
         ;;
     esac
+}
+
+function infected_fun {
+    echo $(echo "$filtered_output" | wc -l)
+}
+
+function gender_fun {
+    filtered_male=$(echo "$filtered_output" | awk -F "," '
+        {                   
+            if ("M" != $4) {next}
+            {print} 
+        }
+    ')
+
+    filtered_female=$(echo "$filtered_output" | awk -F "," '
+        {                   
+            if ("Z" != $4) {next}
+            {print} 
+        }
+    ')
+    echo "Male: $(echo "$filtered_male" | sed '/^[[:space:]]*$/d' | wc -l)"
+    echo "Female: $(echo "$filtered_female" | sed '/^[[:space:]]*$/d' | wc -l)"
 }
 
 main $@
