@@ -7,6 +7,8 @@ POSIXLY_CORRECT=yes
 declare -r DEFAULT_WIDTH=100
 
 function main() {
+    show_histogram=0
+
     # evaluates flags with their's parameters and calls their functions
     get_flags $@
     # sets cmd variable to command name or 0 if no command
@@ -67,9 +69,12 @@ function get_flags() {
                 OPTIND=$((OPTIND + 1))
                 s=$nextopt
             else
-                s=$DEFAULT_WIDTH
+                s="default"
             fi
-            sgraph
+            case $s in
+                infected | merge | gender | age | daily | monthly | yearly | countries | districts | regions) s="default"; OPTIND=$((OPTIND - 1)) ;;
+            esac
+            show_histogram=1
             ;;
         h) help ;;
         esac
@@ -115,9 +120,6 @@ function gender() {
     fi
 }
 
-function sgraph() {
-    echo "S $s"
-}
 
 function help() {
     echo "Help"
@@ -164,7 +166,7 @@ function apply_requirements {
     fi
 
     if [[ $a != "" ]] || [[ $b != "" ]] || [[ $c != "" ]]; then
-        filtered_output=$(echo "$file" | awk -F "," -v after_date=$a -v before_date=$b -v gender=$g -v size_graph=$s '
+        filtered_output=$(echo "$file" | awk -F "," -v after_date=$a -v before_date=$b -v gender=$g '
         {
             if (NR>1)
             {
@@ -250,18 +252,39 @@ function infected_fun {
 }
 
 function gender_fun {
-    echo "$filtered_output" | awk -F "," '
+
+    echo "$filtered_output" | awk -F "," -v show_histogram=$show_histogram -v s=$s -v default_s=100000 '
         BEGIN {
             M = 0
             Z = 0
+            if (s=="default") {
+                s=default_s
+            }
         }
         {                   
             if ("M" == $4) {M++}
             if ("Z" == $4) {Z++}
         }
         END {
-            print("M:",M)
-            print("Z:",Z)
+            if (show_histogram == 0) {
+                print("M:",M)
+                print("Z:",Z)
+            }
+            else {
+                printf("M: ")
+                M_hashes = int(M/s)
+                for (i=0; i <= M_hashes; i++) {
+                    printf("#")
+                }
+                printf("\n")
+                printf("Z: ")
+                Z_hashes = int(Z/s)
+                for (i=0; i <= Z_hashes; i++) {
+                    printf("#")
+                }
+                printf("\n")
+
+            }
         }
     '
 }
