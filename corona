@@ -231,15 +231,15 @@ function apply_commands {
         break
         ;;
     countries)
-        echo "$filtered_output"
+        countries_fun
         break
         ;;
     districts)
-        echo "$filtered_output"
+        districts_fun
         break
         ;;
     regions)
-        echo "$filtered_output"
+        regions_fun
         break
         ;;
     0)
@@ -313,12 +313,13 @@ function age_fun {
             a[9] = 0
             a[10] = 0
             a[11] = 0
+            a[12] = 0
             if (s=="default") {
                 s=default_s
             }
         }
         {
-            if ($3 <= 5) {a[0]++}
+            if ($3 <= 5 && length($3) > 0) {a[0]++}
             if ($3 >= 6 && $3 <=15) {a[1]++}
             if ($3 >= 16 && $3 <=25) {a[2]++}
             if ($3 >= 26 && $3 <=35) {a[3]++}
@@ -329,7 +330,8 @@ function age_fun {
             if ($3 >= 76 && $3 <=85) {a[8]++}
             if ($3 >= 86 && $3 <=95) {a[9]++}
             if ($3 >= 96 && $3 <=105) {a[10]++}
-            if ($3 >= 105 ) {a[11]++}
+            if ($3 > 105 ) {a[11]++}
+            if (length($3) == 0 ) {a[12]++}
         }
         END {
                 if (show_histogram == 0) {
@@ -345,6 +347,7 @@ function age_fun {
                     printf("86-95 :%s\n", a[9])
                     printf("96-105:%s\n", a[10])
                     printf(">105  :%s\n", a[11])
+                    printf("None  :%s\n", a[12])
                 }
                 else {
                     printf("0-5   :")
@@ -371,6 +374,8 @@ function age_fun {
                     print_hash(int(a[10]/s))
                     printf(">105  :")
                     print_hash(int(a[11]/s))
+                    printf("None  :")
+                    print_hash(int(a[12]/s))
                 }
         }
     '
@@ -414,5 +419,69 @@ function yearly_fun {
 }
 
 
+
+function column_grouped {
+    num_column=$1
+    default_s=$2
+    ignore_empty=$3
+    echo "$filtered_output" | awk -F "," -v num_column=$num_column -v ignore_empty=$ignore_empty '
+    {
+        if (ignore_empty == 1){
+            if (length($num_column)>0){print($num_column)}
+        }
+        else {
+            print($num_column)
+        }
+    }
+    ' | sort | uniq -c | awk -F " " -v show_histogram=$show_histogram -v s=$s -v default_s=$default_s '
+        BEGIN {
+            if (s=="default") {
+                s=default_s
+            }
+        }
+        {
+            if (NR == 1) {
+                num_none=$1
+                next
+            }
+            if (show_histogram == 0) {
+                printf("%s: %s\n", $2, $1)
+            }
+            else {
+                printf("%s:", $2)
+                num_hashes=int($1/s)
+                for (i=0; i<num_hashes; i++) {
+                    printf("#")
+                }
+                printf("\n")
+            }
+        }
+        END {
+            if (show_histogram == 0) {
+                printf("%s: %s\n", "None", num_none)
+            }
+            else {
+                printf("%s:", "None")
+                num_hashes=int(num_none/s)
+                for (i=0; i<num_hashes; i++) {
+                    printf("#")
+                }
+                printf("\n")
+            }
+        }
+    '
+}
+
+function countries_fun {
+    column_grouped 8 100 1
+}
+
+function districts_fun {
+    column_grouped 6 1000 0
+}
+
+function regions_fun {
+    column_grouped 5 10000 0
+}
 
 main $@
