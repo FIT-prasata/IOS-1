@@ -72,7 +72,10 @@ function get_flags() {
                 s="default"
             fi
             case $s in
-                infected | merge | gender | age | daily | monthly | yearly | countries | districts | regions) s="default"; OPTIND=$((OPTIND - 1)) ;;
+            infected | merge | gender | age | daily | monthly | yearly | countries | districts | regions)
+                s="default"
+                OPTIND=$((OPTIND - 1))
+                ;;
             esac
             show_histogram=1
             ;;
@@ -119,7 +122,6 @@ function gender() {
         error=1
     fi
 }
-
 
 function help() {
     echo "Help"
@@ -213,7 +215,7 @@ function apply_commands {
         break
         ;;
     age)
-        echo "$filtered_output"
+        age_fun
         break
         ;;
     daily)
@@ -285,6 +287,58 @@ function gender_fun {
                 printf("\n")
 
             }
+        }
+    '
+}
+
+function age_fun {
+
+    echo "$filtered_output" | awk -F "," -v show_histogram=$show_histogram -v s=$s -v default_s=10000 '
+        BEGIN {
+            a_0_5 = 0
+            a_6_15 = 0
+            a_16_25 = 0
+            a_26_35 = 0
+            a_36_45 = 0
+            a_46_55 = 0
+            a_56_65 = 0
+            a_66_75 = 0
+            a_76_85 = 0
+            a_86_95 = 0
+            a_96_105 = 0
+            a_105 = 0
+            if (s=="default") {
+                s=default_s
+            }
+        }
+        {
+            if ($3 <= 5) {a_0_5++}
+            if ($3 >= 6 && $3 <=15) {a_6_15++}
+            if ($3 >= 16 && $3 <=25) {a_16_25++}
+            if ($3 >= 26 && $3 <=35) {a_26_35++}
+            if ($3 >= 36 && $3 <=45) {a_36_45++}
+            if ($3 >= 46 && $3 <=55) {a_46_55++}
+            if ($3 >= 56 && $3 <=65) {a_56_65++}
+            if ($3 >= 66 && $3 <=75) {a_66_75++}
+            if ($3 >= 76 && $3 <=85) {a_76_85++}
+            if ($3 >= 86 && $3 <=95) {a_86_95++}
+            if ($3 >= 96 && $3 <=105) {a_96_105++}
+            if ($3 >= 105 ) {a_105++}
+        }
+        END {
+
+                print("0-5   :", a_0_5)
+                print("6-15  :", a_6_15)
+                print("16-25 :", a_16_25)
+                print("26-35 :", a_26_35)
+                print("36-45 :", a_36_45)
+                print("46-55 :", a_46_55)
+                print("56-65 :", a_56_65)
+                print("66-75 :", a_66_75)
+                print("76-85 :", a_76_85)
+                print("86-95 :", a_86_95)
+                print("96-105:", a_96_105)
+                print(">105  :", a_105)
         }
     '
 }
