@@ -275,13 +275,13 @@ function gender_fun {
             else {
                 printf("M: ")
                 M_hashes = int(M/s)
-                for (i=0; i <= M_hashes; i++) {
+                for (i=0; i < M_hashes; i++) {
                     printf("#")
                 }
                 printf("\n")
                 printf("Z: ")
                 Z_hashes = int(Z/s)
-                for (i=0; i <= Z_hashes; i++) {
+                for (i=0; i < Z_hashes; i++) {
                     printf("#")
                 }
                 printf("\n")
@@ -294,51 +294,84 @@ function gender_fun {
 function age_fun {
 
     echo "$filtered_output" | awk -F "," -v show_histogram=$show_histogram -v s=$s -v default_s=10000 '
+        function print_hash(num_hashes) {
+            for (i=0; i<num_hashes; i++) {
+                printf("#")
+            }
+            printf("\n")
+        }
         BEGIN {
-            a_0_5 = 0
-            a_6_15 = 0
-            a_16_25 = 0
-            a_26_35 = 0
-            a_36_45 = 0
-            a_46_55 = 0
-            a_56_65 = 0
-            a_66_75 = 0
-            a_76_85 = 0
-            a_86_95 = 0
-            a_96_105 = 0
-            a_105 = 0
+            a[0] = 0
+            a[1] = 0
+            a[2] = 0
+            a[3] = 0
+            a[4] = 0
+            a[5] = 0
+            a[6] = 0
+            a[7] = 0
+            a[8] = 0
+            a[9] = 0
+            a[10] = 0
+            a[11] = 0
             if (s=="default") {
                 s=default_s
             }
         }
         {
-            if ($3 <= 5) {a_0_5++}
-            if ($3 >= 6 && $3 <=15) {a_6_15++}
-            if ($3 >= 16 && $3 <=25) {a_16_25++}
-            if ($3 >= 26 && $3 <=35) {a_26_35++}
-            if ($3 >= 36 && $3 <=45) {a_36_45++}
-            if ($3 >= 46 && $3 <=55) {a_46_55++}
-            if ($3 >= 56 && $3 <=65) {a_56_65++}
-            if ($3 >= 66 && $3 <=75) {a_66_75++}
-            if ($3 >= 76 && $3 <=85) {a_76_85++}
-            if ($3 >= 86 && $3 <=95) {a_86_95++}
-            if ($3 >= 96 && $3 <=105) {a_96_105++}
-            if ($3 >= 105 ) {a_105++}
+            if ($3 <= 5) {a[0]++}
+            if ($3 >= 6 && $3 <=15) {a[1]++}
+            if ($3 >= 16 && $3 <=25) {a[2]++}
+            if ($3 >= 26 && $3 <=35) {a[3]++}
+            if ($3 >= 36 && $3 <=45) {a[4]++}
+            if ($3 >= 46 && $3 <=55) {a[5]++}
+            if ($3 >= 56 && $3 <=65) {a[6]++}
+            if ($3 >= 66 && $3 <=75) {a[7]++}
+            if ($3 >= 76 && $3 <=85) {a[8]++}
+            if ($3 >= 86 && $3 <=95) {a[9]++}
+            if ($3 >= 96 && $3 <=105) {a[10]++}
+            if ($3 >= 105 ) {a[11]++}
         }
         END {
-
-                print("0-5   :", a_0_5)
-                print("6-15  :", a_6_15)
-                print("16-25 :", a_16_25)
-                print("26-35 :", a_26_35)
-                print("36-45 :", a_36_45)
-                print("46-55 :", a_46_55)
-                print("56-65 :", a_56_65)
-                print("66-75 :", a_66_75)
-                print("76-85 :", a_76_85)
-                print("86-95 :", a_86_95)
-                print("96-105:", a_96_105)
-                print(">105  :", a_105)
+                if (show_histogram == 0) {
+                    printf("0-5   :%s\n", a[0])
+                    printf("6-15  :%s\n", a[1])
+                    printf("16-25 :%s\n", a[2])
+                    printf("26-35 :%s\n", a[3])
+                    printf("36-45 :%s\n", a[4])
+                    printf("46-55 :%s\n", a[5])
+                    printf("56-65 :%s\n", a[6])
+                    printf("66-75 :%s\n", a[7])
+                    printf("76-85 :%s\n", a[8])
+                    printf("86-95 :%s\n", a[9])
+                    printf("96-105:%s\n", a[10])
+                    printf(">105  :%s\n", a[11])
+                }
+                else {
+                    printf("0-5   :")
+                    print_hash(int(a[0]/s))
+                    printf("6-15  :")
+                    print_hash(int(a[1]/s))
+                    printf("16-25 :")
+                    print_hash(int(a[2]/s))
+                    printf("26-35 :")
+                    print_hash(int(a[3]/s))
+                    printf("36-45 :")
+                    print_hash(int(a[4]/s))
+                    printf("46-55 :")
+                    print_hash(int(a[5]/s))
+                    printf("56-65 :")
+                    print_hash(int(a[6]/s))
+                    printf("66-75 :")
+                    print_hash(int(a[7]/s))
+                    printf("76-85 :")
+                    print_hash(int(a[8]/s))
+                    printf("86-95 :")
+                    print_hash(int(a[9]/s))
+                    printf("96-105:")
+                    print_hash(int(a[10]/s))
+                    printf(">105  :")
+                    print_hash(int(a[11]/s))
+                }
         }
     '
 }
