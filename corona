@@ -433,14 +433,14 @@ function column_grouped {
             print($num_column)
         }
     }
-    ' | sort | uniq -c | awk -F " " -v show_histogram=$show_histogram -v s=$s -v default_s=$default_s '
+    ' | sort | uniq -c | awk -F " " -v show_histogram=$show_histogram -v s=$s -v default_s=$default_s -v ignore_empty=$ignore_empty '
         BEGIN {
             if (s=="default") {
                 s=default_s
             }
         }
         {
-            if (NR == 1) {
+            if (NR == 1 && ignore_empty==0) {
                 num_none=$1
                 next
             }
@@ -457,16 +457,18 @@ function column_grouped {
             }
         }
         END {
-            if (show_histogram == 0) {
-                printf("%s: %s\n", "None", num_none)
-            }
-            else {
-                printf("%s:", "None")
-                num_hashes=int(num_none/s)
-                for (i=0; i<num_hashes; i++) {
-                    printf("#")
+            if (ignore_empty==0){
+                if (show_histogram == 0) {
+                    printf("%s: %s\n", "None", num_none)
                 }
-                printf("\n")
+                else {
+                    printf("%s:", "None")
+                    num_hashes=int(num_none/s)
+                    for (i=0; i<num_hashes; i++) {
+                        printf("#")
+                    }
+                    printf("\n")
+                }
             }
         }
     '
