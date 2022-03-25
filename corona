@@ -219,15 +219,15 @@ function apply_commands {
         break
         ;;
     daily)
-        echo "$filtered_output"
+        daily_fun
         break
         ;;
     monthly)
-        echo "$filtered_output"
+        monthly_fun
         break
         ;;
     yearly)
-        echo "$filtered_output"
+        yearly_fun
         break
         ;;
     countries)
@@ -375,5 +375,44 @@ function age_fun {
         }
     '
 }
+
+function time_grouped {
+    cut_size=$1
+    default_s=$2
+    echo "$filtered_output" | awk -F "," -v cut_size=$cut_size '{print(substr($2, 1, length($2)-cut_size))}' | sort | uniq -c | awk -F " " -v show_histogram=$show_histogram -v s=$s -v default_s=$default_s '
+        BEGIN {
+            if (s=="default") {
+                s=default_s
+            }
+        }
+        {
+            if (show_histogram == 0) {
+                {printf("%s: %s\n", $2, $1)}
+            }
+            else {
+                printf("%s:", $2)
+                num_hashes=int($1/s)
+                for (i=0; i<num_hashes; i++) {
+                    printf("#")
+                }
+                printf("\n")
+            }
+        }
+    '
+}
+
+function daily_fun {
+    time_grouped 0 500
+}
+
+function monthly_fun {
+    time_grouped 3 10000
+}
+
+function yearly_fun {
+    time_grouped 6 100000
+}
+
+
 
 main $@
