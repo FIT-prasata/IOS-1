@@ -5,6 +5,7 @@ OPTIND=1 # Reset in case getopts has been used previously in the shell.
 POSIXLY_CORRECT=yes
 
 declare -r DEFAULT_WIDTH=100
+declare -r HEAD="id,datum,vek,pohlavi,kraj_nuts_kod,okres_lau_kod,nakaza_v_zahranici,nakaza_zeme_csu_kod,reportovano_khs"
 
 function main() {
     show_histogram=0
@@ -19,7 +20,6 @@ function main() {
     if [ $num_files = 0 ]; then
 
         file="$(cat)"
-        header="$(echo "$file" | head -n 1)"
         file="$(echo "$file" | sed 1,1d)"
         apply_requirements
         apply_commands
@@ -146,12 +146,23 @@ function process_files() {
             OPTIND=$((OPTIND + 1))
             num_files=$((num_files + 1))
             if [ $num_files != 1 ]; then
-                new_file=$($param | sed 1,1d)
-                file="$file 
+                if [[ $param =~ ^.*\.gz$ ]]; then
+                    new_file=$(zcat "$param" | sed 1,1d)
+                elif [[ $param =~ ^.*\.bz2$ ]]; then
+                    new_file=$(bzcat "$param" | sed 1,1d)
+                else
+                    new_file=$(cat "$param" | sed 1,1d)
+                fi
+                    file="$file 
 $new_file"
             else
-                header="$(cat $param | head -n 1)"
-                file="$(cat "$param" | sed 1,1d)"
+                if [[ $param =~ ^.*\.gz$ ]]; then
+                    file="$(zcat "$param" | sed 1,1d)"
+                elif [[ $param =~ ^.*\.bz2$ ]]; then
+                    file="$(bzcat "$param" | sed 1,1d)"
+                else
+                    file="$(cat "$param" | sed 1,1d)"
+                fi
             fi
         fi
     done
@@ -164,10 +175,10 @@ $new_file"
 function apply_requirements {
 
     if [ $cmd = "merge" ] || [ $cmd = "0" ]; then
-        echo "$header"
+        echo "$HEAD"
     fi
 
-    if [[ $a != "" ]] || [[ $b != "" ]] || [[ $c != "" ]]; then
+    if [[ $a != "" ]] || [[ $b != "" ]] || [[ $g != "" ]]; then
         filtered_output=$(echo "$file" | awk -F "," -v after_date=$a -v before_date=$b -v gender=$g '
         {
             if (NR>1)
@@ -207,7 +218,9 @@ function apply_commands {
         break
         ;;
     merge)
-        echo "$filtered_output"
+        if ! [[ -z $filtered_output ]]; then
+            echo "$filtered_output"
+        fi
         break
         ;;
     gender)
@@ -243,7 +256,9 @@ function apply_commands {
         break
         ;;
     0)
-        echo "$filtered_output"
+        if ! [[ -z $filtered_output ]]; then
+            echo "$filtered_output"
+        fi
         break
         ;;
     esac
@@ -335,46 +350,46 @@ function age_fun {
         }
         END {
                 if (show_histogram == 0) {
-                    printf("0-5   :%s\n", a[0])
-                    printf("6-15  :%s\n", a[1])
-                    printf("16-25 :%s\n", a[2])
-                    printf("26-35 :%s\n", a[3])
-                    printf("36-45 :%s\n", a[4])
-                    printf("46-55 :%s\n", a[5])
-                    printf("56-65 :%s\n", a[6])
-                    printf("66-75 :%s\n", a[7])
-                    printf("76-85 :%s\n", a[8])
-                    printf("86-95 :%s\n", a[9])
-                    printf("96-105:%s\n", a[10])
-                    printf(">105  :%s\n", a[11])
-                    printf("None  :%s\n", a[12])
+                    printf("0-5   : %s\n", a[0])
+                    printf("6-15  : %s\n", a[1])
+                    printf("16-25 : %s\n", a[2])
+                    printf("26-35 : %s\n", a[3])
+                    printf("36-45 : %s\n", a[4])
+                    printf("46-55 : %s\n", a[5])
+                    printf("56-65 : %s\n", a[6])
+                    printf("66-75 : %s\n", a[7])
+                    printf("76-85 : %s\n", a[8])
+                    printf("86-95 : %s\n", a[9])
+                    printf("96-105: %s\n", a[10])
+                    printf(">105  : %s\n", a[11])
+                    printf("None  : %s\n", a[12])
                 }
                 else {
-                    printf("0-5   :")
+                    printf("0-5   : ")
                     print_hash(int(a[0]/s))
-                    printf("6-15  :")
+                    printf("6-15  : ")
                     print_hash(int(a[1]/s))
-                    printf("16-25 :")
+                    printf("16-25 : ")
                     print_hash(int(a[2]/s))
-                    printf("26-35 :")
+                    printf("26-35 : ")
                     print_hash(int(a[3]/s))
-                    printf("36-45 :")
+                    printf("36-45 : ")
                     print_hash(int(a[4]/s))
-                    printf("46-55 :")
+                    printf("46-55 : ")
                     print_hash(int(a[5]/s))
-                    printf("56-65 :")
+                    printf("56-65 : ")
                     print_hash(int(a[6]/s))
-                    printf("66-75 :")
+                    printf("66-75 : ")
                     print_hash(int(a[7]/s))
-                    printf("76-85 :")
+                    printf("76-85 : ")
                     print_hash(int(a[8]/s))
-                    printf("86-95 :")
+                    printf("86-95 : ")
                     print_hash(int(a[9]/s))
-                    printf("96-105:")
+                    printf("96-105: ")
                     print_hash(int(a[10]/s))
-                    printf(">105  :")
+                    printf(">105  : ")
                     print_hash(int(a[11]/s))
-                    printf("None  :")
+                    printf("None  : ")
                     print_hash(int(a[12]/s))
                 }
         }
@@ -395,7 +410,7 @@ function time_grouped {
                 {printf("%s: %s\n", $2, $1)}
             }
             else {
-                printf("%s:", $2)
+                printf("%s: ", $2)
                 num_hashes=int($1/s)
                 for (i=0; i<num_hashes; i++) {
                     printf("#")
@@ -448,7 +463,7 @@ function column_grouped {
                 printf("%s: %s\n", $2, $1)
             }
             else {
-                printf("%s:", $2)
+                printf("%s: ", $2)
                 num_hashes=int($1/s)
                 for (i=0; i<num_hashes; i++) {
                     printf("#")
@@ -462,7 +477,7 @@ function column_grouped {
                     printf("%s: %s\n", "None", num_none)
                 }
                 else {
-                    printf("%s:", "None")
+                    printf("%s: ", "None")
                     num_hashes=int(num_none/s)
                     for (i=0; i<num_hashes; i++) {
                         printf("#")

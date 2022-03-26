@@ -1,2 +1,5 @@
 osoby.csv
 data/
+*.gz
+*.bz2
+output.txt
