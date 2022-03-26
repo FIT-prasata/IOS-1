@@ -147,25 +147,26 @@ function process_files() {
             num_files=$((num_files + 1))
             if [ $num_files != 1 ]; then
                 if [[ $param =~ ^.*\.gz$ ]]; then
-                    new_file=$(zcat "$param" | sed 1,1d)
+                    new_file=$(zcat "$param")
                 elif [[ $param =~ ^.*\.bz2$ ]]; then
-                    new_file=$(bzcat "$param" | sed 1,1d)
+                    new_file=$(bzcat "$param")
                 else
-                    new_file=$(cat "$param" | sed 1,1d)
+                    new_file=$(cat "$param")
                 fi
-                    file="$file 
+                file="$file 
 $new_file"
             else
                 if [[ $param =~ ^.*\.gz$ ]]; then
-                    file="$(zcat "$param" | sed 1,1d)"
+                    file="$(zcat "$param")"
                 elif [[ $param =~ ^.*\.bz2$ ]]; then
-                    file="$(bzcat "$param" | sed 1,1d)"
+                    file="$(bzcat "$param")"
                 else
-                    file="$(cat "$param" | sed 1,1d)"
+                    file="$(cat "$param")"
                 fi
             fi
         fi
     done
+    file=$(echo "$file" | sed 1,1d | sed 's/ //g' | sed '/^[[:space:]]*$/d')
     if [ $num_files -ne "0" ]; then
         apply_requirements
         apply_commands
@@ -178,36 +179,55 @@ function apply_requirements {
         echo "$HEAD"
     fi
 
-    if [[ $a != "" ]] || [[ $b != "" ]] || [[ $g != "" ]]; then
-        filtered_output=$(echo "$file" | awk -F "," -v after_date=$a -v before_date=$b -v gender=$g '
+    invalid_values=$(echo "$file" | awk -F "," '
         {
-            if (NR>1)
-            {
-                # apply filters if there are any
-                    if (length(after_date) > 0) {
-                        if (after_date > $2) {
-                            {next}
-                        }
-                    }
-                    if (length(before_date) > 0) {
-                        if (before_date < $2) {
-                            {next}
-                        }
-                    }
-                    if (length(gender) > 0) {
-                        if (gender != $4) {
-                            {next}
-                        }
-                    }
-
-                #apply function if there is one
-                {print}
+            if (length($2) > 0) {
+                if ($2 ~ /^[0-9]{4}-(02-(0[1-9]|[12][0-9])|(0[469]|11)-(0[1-9]|[12][0-9]|30)|(0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))$/) {}
+                else {
+                    printf("_d_%s,%s,%s,%s,%s,%s,%s,%s,%s\n", $1,$2,$3,$4,$5,$6,$7,$8,$9)
+                    
+                }
+            }
+            if (length($3) > 0) {
+                if ($3 ~ /^[0-9]+$/) {}
+                else {
+                    printf("_a_%s,%s,%s,%s,%s,%s,%s,%s,%s\n", $1,$2,$3,$4,$5,$6,$7,$8,$9)
+                }
             }
         }
     ')
-    else
-        filtered_output=$(echo "$file")
-    fi
+
+    filtered_output=$(echo "$file" | awk -F "," -v after_date=$a -v before_date=$b -v gender=$g '
+        {
+            valid=1
+            # apply filters if there are any
+            if (length(after_date) > 0) {
+                if (after_date > $2) {
+                    {next}
+                }
+            }
+            if (length(before_date) > 0) {
+                if (before_date < $2) {
+                    {next}
+                }
+            }
+            if (length(gender) > 0) {
+                if (gender != $4) {
+                    {next}
+                }
+            }
+
+            if (length($2) > 0) {
+                if ($2 ~ /^[0-9]{4}-(02-(0[1-9]|[12][0-9])|(0[469]|11)-(0[1-9]|[12][0-9]|30)|(0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))$/) {}
+                else {next}
+            }
+            if (length($3) > 0) {
+                if ($3 ~ /^[0-9]+$/) {}
+                else {next}
+            }
+            {print}
+        }
+    ')
 
 }
 
@@ -262,6 +282,17 @@ function apply_commands {
         break
         ;;
     esac
+
+    echo "$invalid_values" | awk -F "," '
+    {
+        if ($1 ~ /_d_/) {
+            printf("Invalid date: %s,%s,%s,%s,%s,%s,%s,%s,%s\n", substr($1,4,length($1)),$2,$3,$4,$5,$6,$7,$8,$9)
+        }
+        if ($1 ~ /_a_/) {
+            printf("Invalid age: %s,%s,%s,%s,%s,%s,%s,%s,%s\n", substr($1,4,length($1)),$2,$3,$4,$5,$6,$7,$8,$9)
+        }
+    }
+    '
 }
 
 function infected_fun {
@@ -432,8 +463,6 @@ function monthly_fun {
 function yearly_fun {
     time_grouped 6 100000
 }
-
-
 
 function column_grouped {
     num_column=$1
