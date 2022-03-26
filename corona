@@ -147,26 +147,26 @@ function process_files() {
             num_files=$((num_files + 1))
             if [ $num_files != 1 ]; then
                 if [[ $param =~ ^.*\.gz$ ]]; then
-                    new_file=$(zcat "$param")
+                    new_file=$(zcat "$param" | sed 1,1d)
                 elif [[ $param =~ ^.*\.bz2$ ]]; then
-                    new_file=$(bzcat "$param")
+                    new_file=$(bzcat "$param" | sed 1,1d)
                 else
-                    new_file=$(cat "$param")
+                    new_file=$(cat "$param" | sed 1,1d)
                 fi
                 file="$file 
 $new_file"
             else
                 if [[ $param =~ ^.*\.gz$ ]]; then
-                    file="$(zcat "$param")"
+                    file="$(zcat "$param" | sed 1,1d)"
                 elif [[ $param =~ ^.*\.bz2$ ]]; then
-                    file="$(bzcat "$param")"
+                    file="$(bzcat "$param" | sed 1,1d)"
                 else
-                    file="$(cat "$param")"
+                    file="$(cat "$param" | sed 1,1d)"
                 fi
             fi
         fi
     done
-    file=$(echo "$file" | sed 1,1d | sed 's/ //g' | sed '/^[[:space:]]*$/d')
+    file=$(echo "$file" | sed 's/ //g' | sed '/^[[:space:]]*$/d')
     if [ $num_files -ne "0" ]; then
         apply_requirements
         apply_commands
