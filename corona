@@ -124,7 +124,35 @@ function gender() {
 }
 
 function help() {
-    echo "Help"
+    echo "Usage: corona [-h]"
+	echo "       corona [FILTERS] [COMMAND] [LOG [LOG2 [...]]"
+	echo "Analyzes, filters and displays statistics of confirmed COVID-19 cases in Czech republic"
+    echo ""
+	echo "FILTERS: any number of following arguments"
+	echo "   -a DATETIME - shows records AFTER given date <DATETIME, ...), format YYYY-MM-DD"
+	echo "   -b DATETIME - shows records BEFORE given date (..., DATETIME>, format YYYY-MM-DD"
+	echo "   -g GENDER - shows records of chosen GENDER M-males, Z-females"
+	echo "   -s [WIDTH] - optional parameter, width of histograms, must be greater than zero"
+    echo "              - otherwise widt will have default value"
+	echo "              - works with commands: gender,age,daily,monthly,yearly,countries,districts,regions"
+    echo ""
+	echo "COMMANDS - can accept only one of the following commands"
+	echo "   infected   - displays number of infected people"
+	echo "   merge      - merges multiple files into one, preserves defauly order"
+	echo "   gender     - displays the number of infected people for both genders"
+	echo "   age        - displays statistics on the number of infected people by age"
+	echo "   daily      - displays statistics of infected people for each day"
+	echo "   monthly    - displays statistics of infected people for individual months"
+	echo "   yearly     - displays statistics of infected people for individual years"
+	echo "   countries  - displays statistics of infected people for each country excluding Czech republic (code CZ)"
+	echo "   districts  - displays statistics of infected people for individual districts"
+	echo "   regions    - displays statistics of infected people for individual regions"
+    echo ""
+    echo "LOG - paths to files"
+    echo "    - allowed formats: .csv"
+    echo "    - allowed compresions: .gz, .bz2"
+    echo ""
+	echo "-h  - displays help"
     exit 0
 }
 
