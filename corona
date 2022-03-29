@@ -89,36 +89,36 @@ function get_flags() {
 
 function after() {
     if [ -z $a ]; then
-        echo "Parameter to flag -a is required"
+        echo "Parameter to flag -a is required" 1>&2
         error=1
         return
     fi
     if ! [[ $a =~ ^[0-9]{4}-(02-(0[1-9]|[12][0-9])|(0[469]|11)-(0[1-9]|[12][0-9]|30)|(0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))$ ]]; then
-        echo "Invalid date format"
+        echo "Invalid date format for flag -a" 1>&2
         exit 1
     fi
 }
 
 function before() {
     if [ -z $b ]; then
-        echo "Parameter to flag -b is required"
+        echo "Parameter to flag -b is required" 1>&2
         error=1
         return
     fi
     if ! [[ $b =~ ^[0-9]{4}-(02-(0[1-9]|[12][0-9])|(0[469]|11)-(0[1-9]|[12][0-9]|30)|(0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))$ ]]; then
-        echo "Invalid date format"
+        echo "Invalid date format for flag -b" 1>&2
         exit 1
     fi
 }
 
 function gender() {
     if [ -z $g ]; then
-        echo "Parameter to flag -g is required"
+        echo "Parameter to flag -g is required" 1>&2
         error=1
         return
     fi
     if ! [[ $g == "M" || $g == "Z" ]]; then
-        echo "Invalid gender type"
+        echo "Invalid gender type" 1>&2
         error=1
     fi
 }
@@ -320,7 +320,7 @@ function apply_commands {
             printf("Invalid age: %s,%s,%s,%s,%s,%s,%s,%s,%s\n", substr($1,4,length($1)),$2,$3,$4,$5,$6,$7,$8,$9)
         }
     }
-    '
+    ' 1>&2
 }
 
 function infected_fun {
